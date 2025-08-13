@@ -1,0 +1,10 @@
+services:
+  mongodb:
+    image: bitnami/mongodb:latest
+    container_name: mongodb
+    ports:
+      - '27017:27017'
+    environment:
+      - MONGODB_ROOT_PASSWORD=P@ssw0rd
+    volumes:
+      - 'mongodb_master_data:/bitnami/mongodb'
