@@ -5,12 +5,14 @@ import { isValidObjectId, Model } from 'mongoose';
 import { CreateUserDto } from '@app/common/dtos/users/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { Question } from './schemas/question.schema';
+import { RolesService } from '../roles/roles.service';
 
 @Injectable()
 export class UsersRepo {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
     @InjectModel(Question.name) private readonly questionModel: Model<Question>,
+    private readonly rolesService: RolesService,
   ) {}
 
   //! ================================ CREATE USER ================================
@@ -37,12 +39,39 @@ export class UsersRepo {
     // hashing the password and the secret answer
     userData.password = await bcrypt.hash(userData.password, 10);
     userData.secret_answer = await bcrypt.hash(userData.secret_answer, 10);
-    const newDoc = await this.userModel.create(userData);
+
+    // getting the guest role id
+    const guestRole = await this.rolesService.findRoleByName('guest');
+    if (!guestRole) {
+      throw new HttpException('Guest role not found', 500);
+    }
+
+    const newDoc = await this.userModel.create({
+      ...userData,
+      roles: [guestRole._id],
+    });
     return {
       ...newDoc.toObject(),
       password: undefined,
       secret_answer: undefined,
       secret_question: undefined,
+    };
+  }
+
+  //! ================================ VALIDATE USER ================================
+  async validateUser(username: string, password: string) {
+    const user = await this.userModel.findOne({ username }).exec();
+    if (!user) {
+      throw new HttpException('Invalid Credentials', 400);
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new HttpException('Invalid Credentials', 400);
+    }
+    return {
+      id: user._id,
+      username: user.username,
+      // roles: user.roles,
     };
   }
 

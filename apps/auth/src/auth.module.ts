@@ -4,6 +4,8 @@ import { AuthService } from './auth.service';
 import { MongoDBModule } from '@app/common';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
+import { JwtModule } from '@nestjs/jwt';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -11,8 +13,16 @@ import { UsersModule } from './users/users.module';
       isGlobal: true,
       envFilePath: './apps/auth/.env',
     }),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: {
+        expiresIn: process.env.JWT_EXPIRATION || '1h',
+        algorithm: 'RS256',
+      },
+    }),
     MongoDBModule,
     UsersModule,
+    RolesModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

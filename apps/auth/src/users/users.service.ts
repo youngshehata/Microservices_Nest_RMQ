@@ -15,6 +15,10 @@ export class UsersService implements OnModuleInit {
     return await this.usersRepo.register(usersData);
   }
 
+  async validateUser(username: string, password: string) {
+    return await this.usersRepo.validateUser(username, password);
+  }
+
   async seedQuestions() {
     for (const question of defaultQuestions) {
       const existingQuestion =
