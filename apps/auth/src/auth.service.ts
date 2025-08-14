@@ -8,17 +8,21 @@ export class AuthService {
     private jwt: JwtService,
     private readonly userService: UsersService,
   ) {}
-  async validateUser(email: string, pass: string) {
-    // TODO: lookup user (hash check, etc.)
-    if (email !== 'admin@site.com' || pass !== 'secret') {
+  async validateUser(username: string, pass: string) {
+    const user = await this.userService.validateUser(username, pass);
+    if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    return { id: 'u_123', email, roles: ['admin'] };
+    return user;
   }
 
-  async login(email: string, pass: string) {
-    const user = await this.validateUser(email, pass);
-    const payload = { sub: user.id, email: user.email, roles: user.roles };
+  async login(username: string, pass: string) {
+    const user = await this.validateUser(username, pass);
+    const payload = {
+      sub: user.id,
+      username: user.username,
+      roles: user.roles,
+    };
     const accessToken = await this.jwt.signAsync(payload);
     return { accessToken };
   }

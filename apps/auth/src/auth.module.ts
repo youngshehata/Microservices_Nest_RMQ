@@ -14,7 +14,8 @@ import { RolesModule } from './roles/roles.module';
       envFilePath: './apps/auth/.env',
     }),
     JwtModule.register({
-      secret: process.env.JWT_SECRET,
+      privateKey: process.env.JWT_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      publicKey: process.env.JWT_PUBLIC_KEY?.replace(/\\n/g, '\n'),
       signOptions: {
         expiresIn: process.env.JWT_EXPIRATION || '1h',
         algorithm: 'RS256',

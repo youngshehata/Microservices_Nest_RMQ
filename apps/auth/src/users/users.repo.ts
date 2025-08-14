@@ -71,7 +71,7 @@ export class UsersRepo {
     return {
       id: user._id,
       username: user.username,
-      // roles: user.roles,
+      roles: user.roles,
     };
   }
 
