@@ -3,9 +3,10 @@ services:
     image: bitnami/mongodb:latest
     container_name: mongodb
     ports:
-      - '27017:27017'
+      - '27018:27017'
     environment:
-      - MONGODB_ROOT_PASSWORD=P@ssw0rd
+      - MONGODB_ROOT_USER=root
+      - MONGODB_ROOT_PASSWORD=password123
     volumes:
       - 'mongodb_master_data:/bitnami/mongodb'
 
@@ -21,6 +22,20 @@ services:
     volumes:
       - 'rabbitmq_data:/bitnami/rabbitmq'
 
+  auth:
+    build:
+      context: .
+      dockerfile: ./apps/auth/Dockerfile
+      target: development
+    command: npm run start:dev auth
+    env_file:
+      - ./apps/auth/.env
+    depends_on:
+      - mongodb
+      - rabbitmq
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
   gateway:
     build:
       context: .
@@ -29,11 +44,10 @@ services:
     command: npm run start:dev gateway
     env_file:
       - ./apps/gateway/.env
-    environment:
-      - CHOKIDAR_USEPOLLING=true
-      - CHOKIDAR_INTERVAL=100
     depends_on:
       - mongodb
+      - rabbitmq
+      - auth
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -48,9 +62,11 @@ services:
       - ./apps/orders/.env
     depends_on:
       - mongodb
+      - rabbitmq
       - gateway
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
 volumes:
   mongodb_master_data:
+  rabbitmq_data:
