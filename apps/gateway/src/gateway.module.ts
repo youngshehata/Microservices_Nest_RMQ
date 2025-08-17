@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Module, UseGuards } from '@nestjs/common';
 import { GatewayController } from './gateway.controller';
 import { GatewayService } from './gateway.service';
 import { GwOrdersModule } from './gw_orders/gw_orders.module';
 import { GwAuthModule } from './gw_auth/gw_auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { AuthGuard } from './guards/auth.guard';
 
 @Module({
   imports: [
@@ -15,6 +16,6 @@ import { ConfigModule } from '@nestjs/config';
     GwAuthModule,
   ],
   controllers: [GatewayController],
-  providers: [GatewayService],
+  providers: [GatewayService, { provide: UseGuards, useClass: AuthGuard }],
 })
 export class GatewayModule {}

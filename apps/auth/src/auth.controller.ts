@@ -1,21 +1,31 @@
 import { Body, Controller, HttpException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from '@app/common/dtos/users/login.dto';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import {
+  Ctx,
+  MessagePattern,
+  Payload,
+  RmqContext,
+  RpcException,
+} from '@nestjs/microservices';
+import { CreateUserDto } from '@app/common/dtos/users/create-user.dto';
+import { UsersService } from './users/users.service';
 import {
   LOGIN_PATTERN,
   REGISTER_PATTERN,
-} from '@app/common/constraints/auth/auth-patterns.constraints';
-import { CreateUserDto } from '@app/common/dtos/users/create-user.dto';
-import { UsersService } from './users/users.service';
+  RmqService,
+  VALIDATE_TOKEN_PATTERN,
+} from '@app/common';
 
 @Controller()
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
+    private readonly rmqService: RmqService,
   ) {}
 
+  //! ============================== REGISTER USER ================================
   @MessagePattern(REGISTER_PATTERN)
   async registerUser(@Body() userData: CreateUserDto) {
     try {
@@ -34,8 +44,17 @@ export class AuthController {
     }
   }
 
+  //! ============================== LOGIN USER ================================
   @MessagePattern(LOGIN_PATTERN)
   async login(@Payload() credentials: LoginDto) {
     return await this.authService.login(credentials);
+  }
+
+  //! ============================== VALIDATE TOKEN ================================
+  @MessagePattern(VALIDATE_TOKEN_PATTERN)
+  async validateToken(@Payload() token: string, @Ctx() context: RmqContext) {
+    const decodedToken = await this.authService.validateToken(token);
+    this.rmqService.ack(context);
+    return decodedToken;
   }
 }

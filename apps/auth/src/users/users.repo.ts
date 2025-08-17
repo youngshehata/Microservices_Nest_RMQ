@@ -101,4 +101,23 @@ export class UsersRepo {
     const user = await this.userModel.findOne({ username }).exec();
     return !!user;
   }
+
+  //! ================================ REGISTER ADMIN ================================
+  async registerAdmin() {
+    const adminRole = await this.rolesService.findRoleByName('admin');
+    if (!adminRole) {
+      throw new HttpException('Admin role not found', 500);
+    }
+    const question = await this.questionModel.find({}).exec();
+    const questionID = question[0]._id;
+
+    const admin = await this.userModel.create({
+      username: 'admin',
+      password: await bcrypt.hash('admin', 10),
+      secret_question: questionID,
+      secret_answer: await bcrypt.hash('admin', 10),
+      roles: [adminRole._id],
+    });
+    return admin;
+  }
 }

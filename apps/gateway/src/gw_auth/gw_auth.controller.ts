@@ -4,7 +4,7 @@ import { LoginDto } from '@app/common/dtos/users/login.dto';
 import { CreateUserDto } from '@app/common/dtos/users/create-user.dto';
 import { RmqContext } from '@nestjs/microservices';
 
-@Controller('gw-auth')
+@Controller('auth')
 export class GwAuthController {
   constructor(private readonly gwAuthService: GwAuthService) {}
 

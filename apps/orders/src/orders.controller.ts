@@ -1,18 +1,15 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller } from '@nestjs/common';
 import { OrdersService } from './orders.service';
-import { Types } from 'mongoose';
+import { MessagePattern } from '@nestjs/microservices';
+import { CREATE_ORDER_PATTERN, CreateOrderDto } from '@app/common';
 
 @Controller()
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
-
-  @Post()
+  @MessagePattern(CREATE_ORDER_PATTERN)
   createOrder(
     @Body()
-    data: {
-      payment: Types.ObjectId;
-      items: { _id: Types.ObjectId; count: number }[];
-    },
+    data: CreateOrderDto,
   ) {
     return this.ordersService.createOrder(data);
   }

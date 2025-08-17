@@ -9,6 +9,6 @@ import { AUTH_QUEUE, AUTH_SERVICE, RmqModule } from '@app/common';
   ],
   controllers: [GwAuthController],
   providers: [GwAuthService],
-  exports: [GwAuthService],
+  exports: [GwAuthService, RmqModule],
 })
 export class GwAuthModule {}

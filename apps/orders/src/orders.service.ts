@@ -1,14 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { OrdersRepo } from './orders.repo';
-import { Types } from 'mongoose';
+import { CreateOrderDto } from '@app/common';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class OrdersService {
   constructor(private readonly ordersRepo: OrdersRepo) {}
-  createOrder(data: {
-    payment: Types.ObjectId;
-    items: { _id: Types.ObjectId; count: number }[];
-  }) {
-    return this.ordersRepo.create(data);
+  async createOrder(data: CreateOrderDto) {
+    try {
+      return await this.ordersRepo.create(data);
+    } catch (error) {
+      console.log(error);
+      throw new RpcException(error.message);
+    }
   }
 }

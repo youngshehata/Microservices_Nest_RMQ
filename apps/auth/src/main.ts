@@ -19,6 +19,7 @@ async function bootstrap() {
   // Seed Secret Questions
   const usersService = app.get(UsersService);
   await usersService.seedQuestions();
+  await usersService.seedAdminUser();
   const rolesService = app.get(RolesService);
   await rolesService.seedRoles();
   app.connectMicroservice(serviceOptions);
