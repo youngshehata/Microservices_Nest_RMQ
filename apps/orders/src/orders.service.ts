@@ -9,8 +9,6 @@ export class OrdersService {
     payment: Types.ObjectId;
     items: { _id: Types.ObjectId; count: number }[];
   }) {
-    console.log(data);
-
     return this.ordersRepo.create(data);
   }
 }

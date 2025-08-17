@@ -13,7 +13,7 @@ import { RmqService } from './rmq.service';
   exports: [RmqService],
 })
 export class RmqModule {
-  static register({ serviceName }): DynamicModule {
+  static register({ serviceName, queue }): DynamicModule {
     return {
       module: RmqModule,
       imports: [
@@ -24,9 +24,7 @@ export class RmqModule {
               transport: Transport.RMQ,
               options: {
                 urls: [configService.get<string>(RABBIT_MQ_URI)!],
-                queue: configService.get<string>(
-                  `RABBIT_MQ_${serviceName}_QUEUE`!,
-                ),
+                queue,
               },
             }),
             inject: [ConfigService],

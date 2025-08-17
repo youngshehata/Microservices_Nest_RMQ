@@ -6,6 +6,7 @@ import { CreateUserDto } from '@app/common/dtos/users/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { Question } from './schemas/question.schema';
 import { RolesService } from '../roles/roles.service';
+import { LoginDto } from '@app/common/dtos/users/login.dto';
 
 @Injectable()
 export class UsersRepo {
@@ -59,12 +60,17 @@ export class UsersRepo {
   }
 
   //! ================================ VALIDATE USER ================================
-  async validateUser(username: string, password: string) {
-    const user = await this.userModel.findOne({ username }).exec();
+  async validateUser(credentials: LoginDto) {
+    const user = await this.userModel
+      .findOne({ username: credentials.username })
+      .exec();
     if (!user) {
       throw new HttpException('Invalid Credentials', 400);
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      credentials.password,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new HttpException('Invalid Credentials', 400);
     }

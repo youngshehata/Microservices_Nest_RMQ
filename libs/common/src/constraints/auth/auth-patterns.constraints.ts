@@ -1,0 +1,4 @@
+export const LOGIN_PATTERN = 'login';
+export const REGISTER_PATTERN = 'register';
+export const LOGOUT_PATTERN = 'logout';
+export const REFRESH_PATTERN = 'refresh';

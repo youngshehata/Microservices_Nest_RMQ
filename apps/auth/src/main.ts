@@ -1,8 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { AuthModule } from './auth.module';
 import { ValidationPipe } from '@nestjs/common';
-import { RmqService } from '@app/common/rmq/rmq.service';
-import { AUTH_QUEUE } from '@app/common/constraints/rmq-queues-contraints';
+import { AUTH_QUEUE, RmqService } from '@app/common';
+import { UsersService } from './users/users.service';
+import { RolesService } from './roles/roles.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AuthModule);
@@ -15,7 +16,13 @@ async function bootstrap() {
   );
   const rmqService = app.get(RmqService);
   const serviceOptions = rmqService.getOptions(AUTH_QUEUE);
+  // Seed Secret Questions
+  const usersService = app.get(UsersService);
+  await usersService.seedQuestions();
+  const rolesService = app.get(RolesService);
+  await rolesService.seedRoles();
   app.connectMicroservice(serviceOptions);
-  await app.listen(process.env.port ?? 3001);
+  await app.startAllMicroservices();
+  // await app.listen(process.env.port ?? 3001);
 }
 bootstrap();

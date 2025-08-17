@@ -15,6 +15,7 @@ export class RolesService implements OnModuleInit {
   }
 
   async seedRoles() {
+    let seededCount = 0;
     for (const role of defaultRoles) {
       const existingRole = await this.roleModel
         .findOne({ name: role.name })
@@ -24,8 +25,11 @@ export class RolesService implements OnModuleInit {
           name: role.name,
           permissions: role.permissions,
         });
+        seededCount++;
       }
     }
+    if (seededCount === defaultRoles.length)
+      console.log('Roles seeded successfully');
   }
 
   async findRoleByName(name: string): Promise<Role | null> {
