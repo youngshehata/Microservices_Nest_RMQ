@@ -14,6 +14,7 @@ import {
   LOGIN_PATTERN,
   REGISTER_PATTERN,
   RmqService,
+  RpcResponse,
   VALIDATE_TOKEN_PATTERN,
 } from '@app/common';
 
@@ -56,5 +57,37 @@ export class AuthController {
     const decodedToken = await this.authService.validateToken(token);
     this.rmqService.ack(context);
     return decodedToken;
+  }
+
+  //! ============================== IS ADMIN ================================
+  @MessagePattern('is_admin')
+  async isAdmin(@Payload() token: string) {
+    const decodedToken = await this.authService.validateToken(token);
+    if (!decodedToken || decodedToken?.error) {
+      const response: RpcResponse = {
+        data: null,
+        error: {
+          message: 'Invalid Token',
+          statusCode: 401,
+        },
+      };
+      return response;
+    }
+    // this just to make sure that user is actually admin in database, not just in token
+    const isAdmin = await this.usersService.validateAdmin(decodedToken.data.id);
+    if (!isAdmin) {
+      const response: RpcResponse = {
+        data: null,
+        error: {
+          statusCode: 403,
+          message: 'Access Denied',
+        },
+      };
+      return response;
+    }
+    const response: RpcResponse = {
+      data: true,
+    };
+    return response;
   }
 }

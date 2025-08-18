@@ -40,4 +40,9 @@ export class UsersService {
       await this.usersRepo.registerAdmin();
     }
   }
+
+  //! =============================== IS ADMIN ================================
+  async validateAdmin(userId: string) {
+    return await this.usersRepo.validateAdmin(userId);
+  }
 }

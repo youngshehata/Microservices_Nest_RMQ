@@ -1,20 +1,24 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
-import { isValidObjectId, Model } from 'mongoose';
+import { Connection, isValidObjectId, Model } from 'mongoose';
 import { CreateUserDto } from '@app/common/dtos/users/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { Question } from './schemas/question.schema';
 import { RolesService } from '../roles/roles.service';
 import { LoginDto } from '@app/common/dtos/users/login.dto';
+import { AbstractDocument } from '@app/common/database/abstract.repo';
 
 @Injectable()
-export class UsersRepo {
+export class UsersRepo extends AbstractDocument<User> {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
     @InjectModel(Question.name) private readonly questionModel: Model<Question>,
+    @InjectConnection() connection: Connection,
     private readonly rolesService: RolesService,
-  ) {}
+  ) {
+    super(connection, userModel);
+  }
 
   //! ================================ CREATE USER ================================
   async register(userData: CreateUserDto) {
@@ -119,5 +123,23 @@ export class UsersRepo {
       roles: [adminRole._id],
     });
     return admin;
+  }
+
+  //! ================================ IS ADMIN ? ================================
+  async validateAdmin(userId: string) {
+    const user = await this.userModel
+      .findOne({ _id: userId })
+      .populate('roles')
+      .exec(); // populates from roles collection
+    console.log(user);
+
+    const hasAdminRole = user?.roles.some((role: any) => role.name === 'admin');
+    console.log(hasAdminRole);
+
+    if (hasAdminRole) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }
