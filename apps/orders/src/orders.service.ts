@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { OrdersRepo } from './orders.repo';
 import { CreateOrderDto } from '@app/common';
 import { RpcException } from '@nestjs/microservices';
-import { FilterQuery } from 'mongoose';
+import { FilterQuery, Types } from 'mongoose';
 import { Order } from './schemas/order.schema';
 
 @Injectable()
@@ -54,6 +54,20 @@ export class OrdersService {
       return await this.ordersRepo.deleteOne(filterQuery);
     } catch (error) {
       console.log(error);
+      throw new RpcException(error.message);
+    }
+  }
+
+  //! ======================== ATTATCH PAYMENT =======================
+  async attachPayment(paymentID: string, orderID: string) {
+    try {
+      const payment_id = new Types.ObjectId(paymentID);
+      return await this.ordersRepo.updateOne(
+        { payment: payment_id },
+        { _id: orderID },
+      );
+    } catch (error) {
+      console.error(error);
       throw new RpcException(error.message);
     }
   }

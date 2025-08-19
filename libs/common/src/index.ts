@@ -4,6 +4,7 @@ export * from './constraints/rmq-queues-contraints';
 export * from './constraints/rmq-services-contraints';
 export * from './constraints/auth/auth-patterns.constraints';
 export * from './constraints/orders/order-patterns.constraints';
+export * from './constraints/payments/payments-patterns.constraints';
 export * from './rmq/rmq.module';
 export * from './rmq/rmq.service';
 export * from './dtos/orders/create-order.dto';

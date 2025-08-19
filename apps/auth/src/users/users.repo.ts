@@ -116,10 +116,10 @@ export class UsersRepo extends AbstractDocument<User> {
     const questionID = question[0]._id;
 
     const admin = await this.userModel.create({
-      username: 'admin',
-      password: await bcrypt.hash('admin', 10),
+      username: 'administrator',
+      password: await bcrypt.hash('administrator', 10),
       secret_question: questionID,
-      secret_answer: await bcrypt.hash('admin', 10),
+      secret_answer: await bcrypt.hash('administrator', 10),
       roles: [adminRole._id],
     });
     return admin;

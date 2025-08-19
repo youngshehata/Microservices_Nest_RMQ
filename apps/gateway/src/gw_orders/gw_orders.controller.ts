@@ -16,7 +16,6 @@ export class GwOrdersController {
   }
 
   // ! ======================= FIND ONE ORDER =======================
-  @UseGuards(AdminGuard)
   @Post('findOne')
   async findOne(@Body() filterQuery: any) {
     return await this.gwOrdersService.findOneOrder(filterQuery);

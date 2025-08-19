@@ -1,10 +1,11 @@
 import {
+  ATTACH_PAYMENT_PATTERN,
   CREATE_ORDER_PATTERN,
   CreateOrderDto,
   FIND_ONE_ORDER_PATTERN,
   ORDERS_SERVICE,
 } from '@app/common';
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 
@@ -16,9 +17,22 @@ export class GwOrdersService {
 
   // ! ======================= CREATE ORDER =======================
   async creatOrder(order: CreateOrderDto) {
-    return await firstValueFrom(
+    if (order.items.length === 0)
+      throw new BadRequestException('Order must have items');
+    const newOrder = await firstValueFrom(
       this.ordersClient.send(CREATE_ORDER_PATTERN, order),
     );
+    const payment = await firstValueFrom(
+      this.ordersClient.send(CREATE_ORDER_PATTERN, newOrder._id),
+    );
+
+    const attached = await firstValueFrom(
+      this.ordersClient.send(ATTACH_PAYMENT_PATTERN, {
+        paymentID: payment._id,
+        orderID: newOrder._id,
+      }),
+    );
+    return attached;
   }
   // ! ======================= FIND ONE =======================
   async findOneOrder(filterQuery: any) {

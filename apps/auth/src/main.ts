@@ -17,11 +17,11 @@ async function bootstrap() {
   const rmqService = app.get(RmqService);
   const serviceOptions = rmqService.getOptions(AUTH_QUEUE);
   // Seed Secret Questions
+  const rolesService = app.get(RolesService);
+  await rolesService.seedRoles();
   const usersService = app.get(UsersService);
   await usersService.seedQuestions();
   await usersService.seedAdminUser();
-  const rolesService = app.get(RolesService);
-  await rolesService.seedRoles();
   app.connectMicroservice(serviceOptions);
   await app.startAllMicroservices();
   // await app.listen(process.env.port ?? 3001);

@@ -6,8 +6,8 @@ export class Order {
   @Prop({ default: Date.now })
   createdAt?: Date;
 
-  @Prop({ type: Types.ObjectId, ref: 'payments', required: true })
-  payment: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'payments', required: false })
+  payment?: Types.ObjectId;
 
   @Prop({
     type: [

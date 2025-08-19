@@ -52,7 +52,7 @@ export abstract class AbstractDocument<TDocument> {
 
   //! Update One
   async updateOne(
-    document: Partial<TDocument>,
+    updateData: Partial<TDocument>,
     filterQuery: FilterQuery<TDocument>,
   ): Promise<TDocument> {
     try {
@@ -60,10 +60,10 @@ export abstract class AbstractDocument<TDocument> {
       if (!result) {
         throw new NotFoundException('Document was not found to be updated');
       }
-      await this.model.updateOne(result, document);
+      await this.model.updateOne(filterQuery, { $set: updateData });
       return result;
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw new InternalServerErrorException();
     }
   }
