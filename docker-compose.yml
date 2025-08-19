@@ -85,6 +85,21 @@ services:
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
+  inventory:
+    build:
+      context: .
+      dockerfile: ./apps/inventory/Dockerfile
+      target: development
+    command: npm run start:dev inventory
+    env_file:
+      - ./apps/inventory/.env
+    depends_on:
+      - mongodb
+      - rabbitmq
+      - gateway
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
 
 volumes:
   mongodb_master_data:
