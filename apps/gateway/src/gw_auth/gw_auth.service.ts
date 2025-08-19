@@ -7,7 +7,7 @@ import {
 import { CreateUserDto } from '@app/common/dtos/users/create-user.dto';
 import { LoginDto } from '@app/common/dtos/users/login.dto';
 import { HttpException, Inject, Injectable } from '@nestjs/common';
-import { ClientProxy, RmqContext } from '@nestjs/microservices';
+import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
@@ -17,10 +17,12 @@ export class GwAuthService {
     private readonly rmqService: RmqService,
   ) {}
 
-  async lognIn(data: LoginDto, ctx: RmqContext) {
-    const result = await firstValueFrom(
+  async lognIn(data: LoginDto) {
+    const result: RpcResponse = await firstValueFrom(
       this.authClient.send(LOGIN_PATTERN, data),
     );
+    if (result.error)
+      throw new HttpException(result.error.message, result.error.statusCode);
     return result;
   }
 

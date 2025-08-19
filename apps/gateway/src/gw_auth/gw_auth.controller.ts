@@ -3,14 +3,16 @@ import { GwAuthService } from './gw_auth.service';
 import { LoginDto } from '@app/common/dtos/users/login.dto';
 import { CreateUserDto } from '@app/common/dtos/users/create-user.dto';
 import { RmqContext } from '@nestjs/microservices';
+import { Public } from '../gw_orders/decorators/public.decorator';
 
+@Public()
 @Controller('auth')
 export class GwAuthController {
   constructor(private readonly gwAuthService: GwAuthService) {}
 
   @Post('login')
-  async login(@Body() data: LoginDto, ctx: RmqContext) {
-    return await this.gwAuthService.lognIn(data, ctx);
+  async login(@Body() data: LoginDto) {
+    return await this.gwAuthService.lognIn(data);
   }
 
   @Post('register')

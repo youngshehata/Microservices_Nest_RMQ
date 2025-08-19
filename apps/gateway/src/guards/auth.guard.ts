@@ -7,13 +7,28 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { IS_PUBLIC_KEY } from '../gw_orders/decorators/public.decorator';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(@Inject(AUTH_SERVICE) private readonly authClient: ClientProxy) {}
+  constructor(
+    @Inject(AUTH_SERVICE) private readonly authClient: ClientProxy,
+    private reflector: Reflector,
+  ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    // Check if route is marked as public
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic) {
+      return true; // Skip authentication
+    }
+
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers['authorization'] as string;
     if (!authHeader) {
@@ -34,7 +49,8 @@ export class AuthGuard implements CanActivate {
         decodedToken.error.statusCode,
       );
     }
-    request.user = decodedToken;
+
+    request.user = decodedToken.data;
     return true;
   }
 }

@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { GatewayModule } from './gateway.module';
 import { GATEWAY_QUEUE, RmqService } from '@app/common';
 import { ValidationPipe } from '@nestjs/common';
+import { AuthGuard } from './guards/auth.guard';
 
 async function bootstrap() {
   const app = await NestFactory.create(GatewayModule);

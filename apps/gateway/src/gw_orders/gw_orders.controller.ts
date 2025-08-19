@@ -9,7 +9,6 @@ export class GwOrdersController {
   constructor(private readonly gwOrdersService: GwOrdersService) {}
 
   // ! ======================= CREATE ORDER =======================
-  @UseGuards(AuthGuard)
   @Post()
   async createOrder(@Body() order: CreateOrderDto) {
     return await this.gwOrdersService.creatOrder(order);
@@ -19,5 +18,12 @@ export class GwOrdersController {
   @Post('findOne')
   async findOne(@Body() filterQuery: any) {
     return await this.gwOrdersService.findOneOrder(filterQuery);
+  }
+
+  // ! ======================= FIND ONE ORDER =======================
+  @UseGuards(AdminGuard)
+  @Post('test')
+  async test() {
+    return 'Hello World';
   }
 }

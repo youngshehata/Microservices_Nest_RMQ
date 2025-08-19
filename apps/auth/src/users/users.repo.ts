@@ -108,6 +108,10 @@ export class UsersRepo extends AbstractDocument<User> {
 
   //! ================================ REGISTER ADMIN ================================
   async registerAdmin() {
+    const exists = await this.checkUserExists('administrator');
+    if (exists) {
+      return;
+    }
     const adminRole = await this.rolesService.findRoleByName('admin');
     if (!adminRole) {
       throw new HttpException('Admin role not found', 500);
@@ -131,10 +135,8 @@ export class UsersRepo extends AbstractDocument<User> {
       .findOne({ _id: userId })
       .populate('roles')
       .exec(); // populates from roles collection
-    console.log(user);
 
     const hasAdminRole = user?.roles.some((role: any) => role.name === 'admin');
-    console.log(hasAdminRole);
 
     if (hasAdminRole) {
       return true;

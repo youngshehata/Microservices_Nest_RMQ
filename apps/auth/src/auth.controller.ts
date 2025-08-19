@@ -11,6 +11,7 @@ import {
 import { CreateUserDto } from '@app/common/dtos/users/create-user.dto';
 import { UsersService } from './users/users.service';
 import {
+  IS_ADMIN_PATTERN,
   LOGIN_PATTERN,
   REGISTER_PATTERN,
   RmqService,
@@ -48,7 +49,22 @@ export class AuthController {
   //! ============================== LOGIN USER ================================
   @MessagePattern(LOGIN_PATTERN)
   async login(@Payload() credentials: LoginDto) {
-    return await this.authService.login(credentials);
+    try {
+      const user = await this.authService.login(credentials);
+      const response: RpcResponse = {
+        data: user,
+      };
+      return response;
+    } catch (error) {
+      const response: RpcResponse = {
+        data: null,
+        error: {
+          statusCode: 400,
+          message: error.message,
+        },
+      };
+      return response;
+    }
   }
 
   //! ============================== VALIDATE TOKEN ================================
@@ -60,21 +76,9 @@ export class AuthController {
   }
 
   //! ============================== IS ADMIN ================================
-  @MessagePattern('is_admin')
-  async isAdmin(@Payload() token: string) {
-    const decodedToken = await this.authService.validateToken(token);
-    if (!decodedToken || decodedToken?.error) {
-      const response: RpcResponse = {
-        data: null,
-        error: {
-          message: 'Invalid Token',
-          statusCode: 401,
-        },
-      };
-      return response;
-    }
-    // this just to make sure that user is actually admin in database, not just in token
-    const isAdmin = await this.usersService.validateAdmin(decodedToken.data.id);
+  @MessagePattern(IS_ADMIN_PATTERN)
+  async isAdmin(@Payload() user_id: string) {
+    const isAdmin = await this.usersService.validateAdmin(user_id);
     if (!isAdmin) {
       const response: RpcResponse = {
         data: null,
