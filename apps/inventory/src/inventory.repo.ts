@@ -12,4 +12,10 @@ export class InventoryRepo extends AbstractDocument<Item> {
   ) {
     super(connection, itemModel);
   }
+
+  // ! ================================ CHECK ITEM NAME ================================
+  async checkItemName(name: string): Promise<boolean> {
+    const item = await this.itemModel.findOne({ name }).lean();
+    return !!item;
+  }
 }

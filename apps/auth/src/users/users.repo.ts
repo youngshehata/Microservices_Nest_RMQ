@@ -144,4 +144,12 @@ export class UsersRepo extends AbstractDocument<User> {
       return false;
     }
   }
+
+  //! ================================ HAS ROLE ================================
+  async hasAnyRole(userId: string, roles: string[]) {
+    const user = await this.userModel.findById(userId).populate('roles').exec();
+    if (!user) return false;
+
+    return user.roles.some((role: any) => roles.includes(role.name));
+  }
 }

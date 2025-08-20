@@ -8,4 +8,5 @@ export * from './constraints/payments/payments-patterns.constraints';
 export * from './rmq/rmq.module';
 export * from './rmq/rmq.service';
 export * from './dtos/orders/create-order.dto';
+export * from './dtos/inventory/create-item.dto';
 export * from './dtos/rpc.dto';

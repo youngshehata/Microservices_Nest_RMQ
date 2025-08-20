@@ -11,6 +11,7 @@ import {
 } from '@app/common/constraints/inventory/inventory-patterns.constraints';
 import { FilterQuery } from 'mongoose';
 import { Item } from './schemas/item.schema';
+import { RpcResponse } from '@app/common';
 
 @Controller()
 export class InventoryController {
@@ -18,8 +19,18 @@ export class InventoryController {
 
   //! Create new inventory item
   @MessagePattern(CREATE_ITEM_PATTERN)
-  createItem(@Payload() item: CreateItemDto) {
-    return this.inventoryService.createItem(item);
+  async createItem(@Payload() item: CreateItemDto) {
+    try {
+      const newItem = await this.inventoryService.createItem(item);
+      const response: RpcResponse = { data: newItem };
+      return response;
+    } catch (error) {
+      const response: RpcResponse = {
+        data: null,
+        error: { message: error.message, statusCode: 400 },
+      };
+      return response;
+    }
   }
 
   //! Find one inventory item

@@ -10,6 +10,8 @@ export class InventoryService {
 
   //! Create a new inventory item
   async createItem(item: CreateItemDto) {
+    const nameExists = await this.inventoryRepo.checkItemName(item.name);
+    if (nameExists) throw new NotFoundException('Item name already exists');
     return this.inventoryRepo.create(item);
   }
 

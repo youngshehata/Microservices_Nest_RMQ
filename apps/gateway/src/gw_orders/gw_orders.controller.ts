@@ -1,8 +1,6 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { GwOrdersService } from './gw_orders.service';
 import { CreateOrderDto } from '@app/common';
-import { AuthGuard } from '../guards/auth.guard';
-import { AdminGuard } from '../guards/admin.guard';
 
 @Controller('orders')
 export class GwOrdersController {
@@ -21,7 +19,6 @@ export class GwOrdersController {
   }
 
   // ! ======================= FIND ONE ORDER =======================
-  @UseGuards(AdminGuard)
   @Post('test')
   async test() {
     return 'Hello World';

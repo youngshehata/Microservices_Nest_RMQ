@@ -30,6 +30,6 @@ export class CreateItemDto {
   @Max(9999999999)
   quantity: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   addedBy?: Types.ObjectId;
 }

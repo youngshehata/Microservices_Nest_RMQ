@@ -45,4 +45,9 @@ export class UsersService {
   async validateAdmin(userId: string) {
     return await this.usersRepo.validateAdmin(userId);
   }
+
+  //! =============================== HAS ANY ROLE ================================
+  async hasAnyRole(userId: string, roles: string[]) {
+    return this.usersRepo.hasAnyRole(userId, roles);
+  }
 }

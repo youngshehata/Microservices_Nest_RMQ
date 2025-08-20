@@ -11,6 +11,7 @@ import {
 import { CreateUserDto } from '@app/common/dtos/users/create-user.dto';
 import { UsersService } from './users/users.service';
 import {
+  HAS_ROLE_PATTERN,
   IS_ADMIN_PATTERN,
   LOGIN_PATTERN,
   REGISTER_PATTERN,
@@ -75,23 +76,42 @@ export class AuthController {
     return decodedToken;
   }
 
-  //! ============================== IS ADMIN ================================
-  @MessagePattern(IS_ADMIN_PATTERN)
-  async isAdmin(@Payload() user_id: string) {
-    const isAdmin = await this.usersService.validateAdmin(user_id);
-    if (!isAdmin) {
-      const response: RpcResponse = {
-        data: null,
+  // //! ============================== IS ADMIN ================================
+  // @MessagePattern(IS_ADMIN_PATTERN)
+  // async isAdmin(@Payload() user_id: string) {
+  //   const isAdmin = await this.usersService.validateAdmin(user_id);
+  //   if (!isAdmin) {
+  //     const response: RpcResponse = {
+  //       data: null,
+  //       error: {
+  //         statusCode: 403,
+  //         message: 'Access Denied',
+  //       },
+  //     };
+  //     return response;
+  //   }
+  //   const response: RpcResponse = {
+  //     data: true,
+  //   };
+  //   return response;
+  // }
+
+  //! ============================== HAS ROLE ? ================================
+  @MessagePattern(HAS_ROLE_PATTERN)
+  async hasRole(@Payload() payload: { userId: string; roles: string[] }) {
+    const { userId, roles } = payload;
+    console.log(userId, roles);
+
+    const hasRole = await this.usersService.hasAnyRole(userId, roles);
+    if (!hasRole) {
+      return {
+        data: false,
         error: {
           statusCode: 403,
           message: 'Access Denied',
         },
       };
-      return response;
     }
-    const response: RpcResponse = {
-      data: true,
-    };
-    return response;
+    return { data: true };
   }
 }
