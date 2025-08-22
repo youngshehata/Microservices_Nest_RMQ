@@ -100,7 +100,6 @@ export class AuthController {
   @MessagePattern(HAS_ROLE_PATTERN)
   async hasRole(@Payload() payload: { userId: string; roles: string[] }) {
     const { userId, roles } = payload;
-    console.log(userId, roles);
 
     const hasRole = await this.usersService.hasAnyRole(userId, roles);
     if (!hasRole) {
