@@ -1,20 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { OrdersRepo } from './orders.repo';
-import { CreateOrderDto } from '@app/common';
-import { RpcException } from '@nestjs/microservices';
+import {
+  CreateOrderDto,
+  INVENTORY_SERVICE,
+  RpcResponse,
+  VALIDATE_AND_MINUS_ITEMS_PATTERN,
+} from '@app/common';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { FilterQuery, Types } from 'mongoose';
 import { Order } from './schemas/order.schema';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly ordersRepo: OrdersRepo) {}
+  constructor(
+    private readonly ordersRepo: OrdersRepo,
+    @Inject(INVENTORY_SERVICE) private readonly inventoryClient: ClientProxy,
+  ) {}
   //! ======================= CREATE ORDER =======================
   async createOrder(data: CreateOrderDto) {
     try {
-      return await this.ordersRepo.create(data);
+      const validItems: RpcResponse = await firstValueFrom(
+        this.inventoryClient.send(VALIDATE_AND_MINUS_ITEMS_PATTERN, data.items),
+      );
+      if (validItems.error) {
+        return { data: null, error: validItems.error } as RpcResponse;
+      }
+      const newOrder = await this.ordersRepo.create(data);
+      return { data: newOrder };
     } catch (error) {
-      console.log(error);
-      throw new RpcException(error.message);
+      return { data: null, error: { message: error.message, statusCode: 400 } };
     }
   }
 

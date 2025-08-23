@@ -34,10 +34,8 @@ export class PaymentsService {
     }
   }
 
-  //! Get Pending Payment Status Id
+  //! Create New Payment
   async createPayment(orderID: string): Promise<Payment> {
-    console.log(orderID);
-
     const objectId = new Types.ObjectId(orderID);
     const paymentStatus = await this.paymentsStatusRepo.getPendingStatusId();
     return this.paymentsRepo.create({ order: objectId, status: paymentStatus });

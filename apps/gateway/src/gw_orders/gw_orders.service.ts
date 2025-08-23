@@ -6,6 +6,7 @@ import {
   FIND_ONE_ORDER_PATTERN,
   ORDERS_SERVICE,
   PAYMENTS_SERVICE,
+  RpcResponse,
 } from '@app/common';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
@@ -23,20 +24,27 @@ export class GwOrdersService {
     if (order.items.length === 0)
       throw new BadRequestException('Order must have items');
 
-    const newOrder = await firstValueFrom(
+    // Creating the order
+    const newOrder: RpcResponse = await firstValueFrom(
       this.ordersClient.send(CREATE_ORDER_PATTERN, order),
     );
-    const payment = await firstValueFrom(
-      this.paymentsClient.send(CREATE_PAYMENT_PATTERN, newOrder._id),
-    );
+    if (newOrder.error) throw new BadRequestException(newOrder.error.message);
 
-    const attached = await firstValueFrom(
+    // Creating the payment
+    const payment: RpcResponse = await firstValueFrom(
+      this.paymentsClient.send(CREATE_PAYMENT_PATTERN, newOrder.data._id),
+    );
+    if (payment.error) throw new BadRequestException(payment.error.message);
+
+    // Attaching the payment
+    const attached: RpcResponse = await firstValueFrom(
       this.ordersClient.send(ATTACH_PAYMENT_PATTERN, {
-        paymentID: payment._id,
-        orderID: newOrder._id,
+        paymentID: payment.data._id,
+        orderID: newOrder.data._id,
       }),
     );
-    return attached;
+    if (attached.error) throw new BadRequestException(attached.error.message);
+    return attached.data;
   }
   // ! ======================= FIND ONE =======================
   async findOneOrder(filterQuery: any) {

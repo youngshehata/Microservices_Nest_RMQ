@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { CreateItemDto } from '@app/common/dtos/inventory/create-item.dto';
 import {
   CREATE_ITEM_PATTERN,
@@ -8,10 +8,11 @@ import {
   FIND_MANY_ITEMS_PATTERN,
   UPDATE_ITEM_PATTERN,
   DELETE_ITEM_PATTERN,
+  VALIDATE_AND_MINUS_ITEMS_PATTERN,
 } from '@app/common/constraints/inventory/inventory-patterns.constraints';
 import { FilterQuery } from 'mongoose';
 import { Item } from './schemas/item.schema';
-import { RpcResponse } from '@app/common';
+import { ItemsArray, RpcResponse } from '@app/common';
 
 @Controller()
 export class InventoryController {
@@ -30,6 +31,18 @@ export class InventoryController {
         error: { message: error.message, statusCode: 400 },
       };
       return response;
+    }
+  }
+
+  //! VALIDATE LIST OF ITEMS
+  @MessagePattern(VALIDATE_AND_MINUS_ITEMS_PATTERN)
+  async validateAndMinusItems(@Payload() items: ItemsArray) {
+    try {
+      const response: RpcResponse =
+        await this.inventoryService.validateAndMinusItems(items);
+      return response;
+    } catch (error) {
+      throw new RpcException(error.message);
     }
   }
 
