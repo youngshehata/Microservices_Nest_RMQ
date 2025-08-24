@@ -50,18 +50,22 @@ export abstract class AbstractDocument<TDocument> {
     }
   }
 
-  //! Update One
   async updateOne(
     updateData: Partial<TDocument>,
     filterQuery: FilterQuery<TDocument>,
   ): Promise<TDocument> {
     try {
-      const result = await this.model.findOne(filterQuery);
-      if (!result) {
+      const updatedDoc = await this.model.findOneAndUpdate(
+        filterQuery,
+        { $set: updateData },
+        { new: true }, // return the updated document
+      );
+
+      if (!updatedDoc) {
         throw new NotFoundException('Document was not found to be updated');
       }
-      await this.model.updateOne(filterQuery, { $set: updateData });
-      return result;
+
+      return updatedDoc;
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException();
