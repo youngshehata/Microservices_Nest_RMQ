@@ -1,3 +1,7 @@
+<h1>Basic Microservices example i've built for learning,</h1>
+<h2>with RabbitMQ broker, jwt-token with RS256 alg just incase you need the services itself authentication not relying on the gateway</h2>
+<h3>Ahmed Shehata</h3>
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
