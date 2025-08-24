@@ -1,10 +1,12 @@
 import {
   ATTACH_PAYMENT_PATTERN,
+  CREATE_INTENT_PATTERN,
   CREATE_ORDER_PATTERN,
   CREATE_PAYMENT_PATTERN,
   CreateOrderDto,
   FIND_ONE_ORDER_PATTERN,
   ORDERS_SERVICE,
+  PaymentIntentDto,
   PAYMENTS_SERVICE,
   RpcResponse,
 } from '@app/common';
@@ -46,6 +48,14 @@ export class GwOrdersService {
     if (attached.error) throw new BadRequestException(attached.error.message);
     return attached.data;
   }
+
+  // ! ======================= FIND ONE =======================
+  async paymentIntent(data: PaymentIntentDto) {
+    return await firstValueFrom(
+      this.paymentsClient.send(CREATE_INTENT_PATTERN, data),
+    );
+  }
+
   // ! ======================= FIND ONE =======================
   async findOneOrder(filterQuery: any) {
     return await firstValueFrom(

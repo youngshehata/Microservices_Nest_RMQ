@@ -14,6 +14,12 @@ export class Payment {
 
   @Prop({ type: Types.ObjectId, ref: 'PaymentStatus', required: true })
   status: Types.ObjectId;
+
+  @Prop({ type: Number, required: false })
+  cost?: number;
+
+  @Prop({ type: String, required: false })
+  stripeID?: string;
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);

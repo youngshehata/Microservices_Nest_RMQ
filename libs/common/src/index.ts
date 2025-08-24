@@ -11,4 +11,6 @@ export * from './rmq/rmq.service';
 export * from './dtos/orders/create-order.dto';
 export * from './dtos/inventory/create-item.dto';
 export * from './dtos/inventory/items-array.type';
+export * from './dtos/payments/create-payment.dto';
+export * from './dtos/payments/payment-intent.dto';
 export * from './dtos/rpc.dto';
