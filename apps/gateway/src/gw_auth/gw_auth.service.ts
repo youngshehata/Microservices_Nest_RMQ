@@ -17,6 +17,7 @@ export class GwAuthService {
     private readonly rmqService: RmqService,
   ) {}
 
+  //! ====================== LOGIN ======================
   async lognIn(data: LoginDto) {
     const result: RpcResponse = await firstValueFrom(
       this.authClient.send(LOGIN_PATTERN, data),
@@ -26,10 +27,21 @@ export class GwAuthService {
     return result;
   }
 
+  //! ====================== REGISTER ======================
   async register(user: CreateUserDto) {
-    return await firstValueFrom(this.authClient.send(REGISTER_PATTERN, user));
+    const response: RpcResponse = await firstValueFrom(
+      this.authClient.send(REGISTER_PATTERN, user),
+    );
+    if (response.error) {
+      throw new HttpException(
+        response.error.message,
+        response.error.statusCode,
+      );
+    }
+    return response.data;
   }
 
+  //! ====================== VALIDATE TOKEN ======================
   async validateToken(token: string) {
     const response: RpcResponse = await firstValueFrom(
       this.authClient.send(VALIDATE_TOKEN_PATTERN, token),

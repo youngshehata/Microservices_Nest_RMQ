@@ -2,7 +2,13 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Connection, FilterQuery, Model, SaveOptions } from 'mongoose';
+import {
+  ClientSession,
+  Connection,
+  FilterQuery,
+  Model,
+  SaveOptions,
+} from 'mongoose';
 
 export abstract class AbstractDocument<TDocument> {
   constructor(
@@ -58,7 +64,7 @@ export abstract class AbstractDocument<TDocument> {
       const updatedDoc = await this.model.findOneAndUpdate(
         filterQuery,
         { $set: updateData },
-        { new: true }, // return the updated document
+        { new: true },
       );
 
       if (!updatedDoc) {
@@ -85,12 +91,5 @@ export abstract class AbstractDocument<TDocument> {
       console.log(error);
       throw new InternalServerErrorException();
     }
-  }
-
-  //! Start Transaction
-  async startTransaction() {
-    const session = await this.connection.startSession();
-    session.startTransaction();
-    return session;
   }
 }

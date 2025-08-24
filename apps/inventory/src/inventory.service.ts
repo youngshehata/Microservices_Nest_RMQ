@@ -1,6 +1,7 @@
 import { CreateItemDto } from '@app/common/dtos/inventory/create-item.dto';
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -13,14 +14,14 @@ import { ItemsArray, RpcResponse } from '@app/common';
 export class InventoryService {
   constructor(private readonly inventoryRepo: InventoryRepo) {}
 
-  //! Create a new inventory item
+  //! =============================== Create a new inventory item ===============================
   async createItem(item: CreateItemDto) {
     const nameExists = await this.inventoryRepo.checkItemName(item.name);
     if (nameExists) throw new NotFoundException('Item name already exists');
     return this.inventoryRepo.create(item);
   }
 
-  //! Validate multiple inventory items
+  //! =============================== Validate multiple inventory items ===============================
   async validateAndMinusItems(items: ItemsArray) {
     try {
       let isError: any = null;
@@ -32,23 +33,25 @@ export class InventoryService {
         if (itemExists.quantity < item.count) {
           isError = 'Not enough quantity';
         }
-        if (!isError)
-          await this.inventoryRepo.updateOne(
-            { quantity: itemExists.quantity - item.count },
-            { _id: item._id },
-          );
       }
-      const response: RpcResponse = {
-        error: isError ? { message: isError, statusCode: 400 } : undefined,
-        data: isError ? null : true,
-      };
 
-      return response;
+      if (isError) {
+        throw new HttpException(isError, 400);
+      }
+
+      for (const item of items) {
+        const itemQuantity = (
+          await this.inventoryRepo.findOne({ _id: item._id })
+        ).quantity;
+        await this.inventoryRepo.updateOne(
+          { quantity: itemQuantity - item.count },
+          { _id: item._id },
+        );
+      }
+
+      return true;
     } catch (error) {
-      return {
-        data: null,
-        error: { message: error.message, statusCode: 400 },
-      };
+      throw new BadRequestException(error.message);
     }
   }
 

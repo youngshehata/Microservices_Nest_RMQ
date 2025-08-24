@@ -1,4 +1,4 @@
-import { Body, Controller, HttpException } from '@nestjs/common';
+import { Body, Controller } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from '@app/common/dtos/users/login.dto';
 import {
@@ -6,13 +6,11 @@ import {
   MessagePattern,
   Payload,
   RmqContext,
-  RpcException,
 } from '@nestjs/microservices';
 import { CreateUserDto } from '@app/common/dtos/users/create-user.dto';
 import { UsersService } from './users/users.service';
 import {
   HAS_ROLE_PATTERN,
-  IS_ADMIN_PATTERN,
   LOGIN_PATTERN,
   REGISTER_PATTERN,
   RmqService,
@@ -30,26 +28,30 @@ export class AuthController {
 
   //! ============================== REGISTER USER ================================
   @MessagePattern(REGISTER_PATTERN)
-  async registerUser(@Body() userData: CreateUserDto) {
+  async registerUser(
+    @Body() userData: CreateUserDto,
+    @Ctx() context: RmqContext,
+  ) {
     try {
-      return await this.usersService.register(userData);
+      const user = await this.usersService.register(userData);
+      this.rmqService.ack(context);
+      return { data: user } as RpcResponse;
     } catch (error) {
-      if (error instanceof HttpException) {
-        return {
-          statusCode: error.getStatus(),
+      const response: RpcResponse = {
+        data: null,
+        error: {
+          statusCode: 400,
           message: error.message,
-        };
-      }
-      return {
-        statusCode: 500,
-        message: `User registration failed: ${error.message}`,
+        },
       };
+      return response;
     }
   }
 
   //! ============================== LOGIN USER ================================
   @MessagePattern(LOGIN_PATTERN)
-  async login(@Payload() credentials: LoginDto) {
+  async login(@Payload() credentials: LoginDto, @Ctx() context: RmqContext) {
+    this.rmqService.ack(context);
     try {
       const user = await this.authService.login(credentials);
       const response: RpcResponse = {
@@ -76,29 +78,13 @@ export class AuthController {
     return decodedToken;
   }
 
-  // //! ============================== IS ADMIN ================================
-  // @MessagePattern(IS_ADMIN_PATTERN)
-  // async isAdmin(@Payload() user_id: string) {
-  //   const isAdmin = await this.usersService.validateAdmin(user_id);
-  //   if (!isAdmin) {
-  //     const response: RpcResponse = {
-  //       data: null,
-  //       error: {
-  //         statusCode: 403,
-  //         message: 'Access Denied',
-  //       },
-  //     };
-  //     return response;
-  //   }
-  //   const response: RpcResponse = {
-  //     data: true,
-  //   };
-  //   return response;
-  // }
-
   //! ============================== HAS ROLE ? ================================
   @MessagePattern(HAS_ROLE_PATTERN)
-  async hasRole(@Payload() payload: { userId: string; roles: string[] }) {
+  async hasRole(
+    @Payload() payload: { userId: string; roles: string[] },
+    @Ctx() context: RmqContext,
+  ) {
+    this.rmqService.ack(context);
     const { userId, roles } = payload;
 
     const hasRole = await this.usersService.hasAnyRole(userId, roles);
@@ -109,7 +95,7 @@ export class AuthController {
           statusCode: 403,
           message: 'Access Denied',
         },
-      };
+      } as RpcResponse;
     }
     return { data: true };
   }
