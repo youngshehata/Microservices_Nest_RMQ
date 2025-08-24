@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { OrdersRepo } from './orders.repo';
 import {
   CreateOrderDto,
@@ -24,12 +24,12 @@ export class OrdersService {
         this.inventoryClient.send(VALIDATE_AND_MINUS_ITEMS_PATTERN, data.items),
       );
       if (validItems.error) {
-        return { data: null, error: validItems.error } as RpcResponse;
+        throw new HttpException(validItems.error.message, 400);
       }
       const newOrder = await this.ordersRepo.create(data);
-      return { data: newOrder };
+      newOrder;
     } catch (error) {
-      return { data: null, error: { message: error.message, statusCode: 400 } };
+      throw new HttpException(error.message, 400);
     }
   }
 
